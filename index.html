@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Members Area</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://www.authpro.com/auth/Akshat24/?action=pp"></script>
+    <script>
+        function applyInitialTheme() {
+            let savedTheme = 'system';
+            try { savedTheme = localStorage.getItem('mygame_theme') || 'system'; } catch (e) {}
+            if (savedTheme === 'light' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+                document.documentElement.classList.add('light-mode');
+            }
+        }
+        applyInitialTheme();
+    </script>
+    <style>
+        :root {
+            --bg: #0d0d0d;
+            --header-bg: rgba(13,13,13,0.92);
+            --text: #f0ece4;
+            --subtext: #888;
+            --card-bg: #161616;
+            --card-border: #2a2a2a;
+            --shadow: rgba(0,0,0,0.6);
+            --inst-bg: #1a1a1a;
+            --inst-text: #aaaaaa;
+            --gold: #c8a95a;
+            --accent: #e05c00;
+        }
+        html.light-mode {
+            --bg: #f0ece4;
+            --header-bg: rgba(240,236,228,0.95);
+            --text: #1a1a1a;
+            --subtext: #777;
+            --card-bg: #ffffff;
+            --card-border: #ddd8ce;
+            --shadow: rgba(0,0,0,0.12);
+            --inst-bg: #f7f4ef;
+            --inst-text: #555;
+            --gold: #b8922a;
+            --accent: #d45200;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            min-height: 100vh;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.35s, color 0.35s;
+        }
+        .header {
+            position: relative;
+            width: 100%;
+            padding: 44px 20px 36px;
+            text-align: center;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 40px;
+        }
+        .header-eyebrow {
+            font-weight: 300; letter-spacing: 6px; font-size: 11px;
+            text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+        }
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 34px; letter-spacing: 2px;
+            color: var(--text); padding: 0 60px;
+        }
+        .gold-divider {
+            width: 50px; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 14px auto 0;
+        }
+        .settings-container { position: absolute; top: 18px; right: 18px; z-index: 10000; }
+        .settings-btn {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 50%; cursor: pointer; outline: none;
+            padding: 9px; display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .settings-btn:hover { border-color: var(--gold); box-shadow: 0 0 12px rgba(200,169,90,0.2); }
+        .settings-btn svg { fill: var(--text); width: 22px; height: 22px; transition: transform 0.4s ease; }
+        .settings-btn:hover svg { transform: rotate(90deg); }
+        .dropdown {
+            display: none; position: absolute; top: 52px; right: 0;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 10px; box-shadow: 0 8px 30px var(--shadow);
+            flex-direction: column; overflow: hidden; min-width: 190px;
+        }
+        .dropdown.show { display: flex; animation: dropIn 0.18s ease; }
+        @keyframes dropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+        .dropdown-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--subtext); padding:12px 18px 6px; font-weight:500; }
+        .dropdown button {
+            background: none; border: none; padding: 11px 18px;
+            color: var(--text); cursor: pointer; font-size: 14px;
+            font-family: 'DM Sans', sans-serif; text-align: left;
+            transition: background 0.15s; width: 100%;
+        }
+        .dropdown button:hover { background: var(--inst-bg); }
+        .dropdown-sep { height: 1px; background: var(--card-border); margin: 6px 0; }
+        .dropdown a {
+            display: block; padding: 11px 18px; font-size: 14px;
+            font-family: 'DM Sans', sans-serif; text-decoration: none;
+            transition: background 0.15s; width: 100%; box-sizing: border-box;
+        }
+        .dropdown a:hover { background: var(--inst-bg); }
+        .dropdown a.chat { color: #4caf50; font-weight: 500; }
+        .dropdown a.chat:hover { background: rgba(76,175,80,0.08); }
+        .dropdown a.logout { color: var(--accent); font-weight: 500; }
+        .dropdown a.logout:hover { background: rgba(224,92,0,0.08); }
+        .dropdown a.delete { color: #e03030; font-weight: 500; }
+        .dropdown a.delete:hover { background: rgba(224,48,48,0.08); }
+        .game-container {
+            display: flex; flex-direction: column; gap: 36px;
+            align-items: center; padding: 0 20px 60px;
+            width: 100%; max-width: 580px; margin: 0 auto;
+        }
+        .game-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 14px; overflow: hidden; width: 100%;
+            box-shadow: 0 4px 24px var(--shadow); transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .game-card:hover { transform: translateY(-3px); box-shadow: 0 10px 36px var(--shadow); }
+        .game-header { display:flex; align-items:center; gap:10px; padding:16px 20px 14px; border-bottom:1px solid var(--card-border); }
+        .game-dot { width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; }
+        .game-title { font-family:'Playfair Display',serif; font-size:17px; color:var(--text); }
+        .game-iframe-wrap { width:100%; aspect-ratio:485/402; background:#000; }
+        .game-iframe-wrap iframe { width:100%; height:100%; border:none; display:block; }
+        .instructions { padding:14px 20px; color:var(--inst-text); font-size:13.5px; line-height:1.5; border-top:1px solid var(--card-border); }
+        .instructions strong { color:var(--gold); }
+        /* Floating chat button */
+        .chat-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #4caf50;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 13px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(76,175,80,0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        .chat-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(76,175,80,0.5); }
+        .chat-fab:active { transform: scale(0.96); }
+        @media (max-width: 540px) {
+            .chat-fab { bottom: 16px; right: 16px; font-size: 14px; padding: 12px 18px; }
+        }
+
+        @media (max-width: 540px) {
+            .header h1 { font-size: 22px; padding: 0 50px; }
+            .settings-container { top: 14px; right: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a class="chat-fab" href="https://www.authpro.com/auth/Akshat24/?action=chat" target="_blank">
+        💬 Chat
+    </a>
+
+    <div class="header">
+        <div class="settings-container">
+            <button class="settings-btn" onclick="toggleSettings()" title="Settings">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58
+                    c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96
+                    c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84
+                    c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33
+                    c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58
+                    C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61
+                    l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54
+                    c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54
+                    c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32
+                    c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z
+                    M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                </svg>
+            </button>
+            <div class="dropdown" id="themeDropdown">
+                <div class="dropdown-label">Theme</div>
+                <button onclick="setTheme('system')">⚙️ System Default</button>
+                <button onclick="setTheme('dark')">🌙 Dark Mode</button>
+                <button onclick="setTheme('light')">☀️ Light Mode</button>
+                <div class="dropdown-sep"></div>
+
+                <a class="chat" href="https://www.authpro.com/auth/Akshat24/?action=chat" target="_blank">💬 Chat</a>
+                <a class="logout" href="https://sites.google.com/view/mygamescratch/free-area" target="_top">🚪 Logout</a>
+                <a class="delete" href="https://www.authpro.com/auth/Akshat24/?action=del" target="_top">⚠️ Delete Account</a>
+            </div>
+        </div>
+        <div class="header-eyebrow">Exclusive Access</div>
+        <h1>VIP Members Area</h1>
+        <div class="gold-divider"></div>
+    </div>
+
+    <div class="game-container">
+        <div class="game-card">
+            <div class="game-header">
+                <div class="game-dot"></div>
+                <div class="game-title">Car Game</div>
+            </div>
+            <div class="game-iframe-wrap">
+                <iframe src="https://scratch.mit.edu/projects/1131358274/embed"
+                    allowtransparency="true" scrolling="no" allowfullscreen></iframe>
+            </div>
+            <div class="instructions"><strong>How to play:</strong> Use Arrow keys to move around.</div>
+        </div>
+        <div class="game-card">
+            <div class="game-header">
+                <div class="game-dot"></div>
+                <div class="game-title">Geometry Dash</div>
+            </div>
+            <div class="game-iframe-wrap">
+                <iframe src="https://scratch.mit.edu/projects/1054432158/embed"
+                    allowtransparency="true" scrolling="no" allowfullscreen></iframe>
+            </div>
+            <div class="instructions"><strong>How to play:</strong> Click or press Space bar to jump.</div>
+        </div>
+    </div>
+
+    <script>
+        const dropdown = document.getElementById('themeDropdown');
+        function toggleSettings() { dropdown.classList.toggle('show'); }
+        window.onclick = function(e) {
+            if (!e.target.closest('.settings-container')) dropdown.classList.remove('show');
+        };
+        function setTheme(mode) {
+            if (mode === 'system') {
+                document.documentElement.classList.toggle('light-mode',
+                    window.matchMedia('(prefers-color-scheme: light)').matches);
+            } else {
+                document.documentElement.classList.toggle('light-mode', mode === 'light');
+            }
+            try { localStorage.setItem('mygame_theme', mode); } catch(e) {}
+            dropdown.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
