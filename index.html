@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Members Area</title>
     
+    <!-- STRICT ANTI-CACHE META TAGS -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     
     <script>
@@ -18,7 +23,7 @@
         applyInitialTheme();
     </script>
 
-    <!-- FIREBASE AUTHENTICATION & FIRESTORE INTEGRATION -->
+    <!-- FIREBASE AUTHENTICATION INTEGRATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
         import { 
@@ -46,18 +51,17 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Security Guard: Check authentication state
+        // Firebase Auth Protection Check
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                // If user is not logged in, redirect them back to the main site
-                window.location.href = "https://mygamescratch.vercel.app/";
+                window.location.replace("https://mygamescratch.vercel.app/");
             }
         });
 
         // Firebase Logout Function
         window.handleFirebaseLogout = function() {
             signOut(auth).then(() => {
-                window.location.href = "https://mygamescratch.vercel.app/";
+                window.location.replace("https://mygamescratch.vercel.app/");
             }).catch((error) => {
                 alert("Error logging out: " + error.message);
             });
@@ -71,26 +75,14 @@
             const user = auth.currentUser;
             if (user) {
                 try {
-                    // Delete user record from Firestore
                     await deleteDoc(doc(db, "users", user.uid));
-                    // Delete user account from Firebase Authentication
                     await deleteUser(user);
                     alert("Your account has been deleted.");
-                    window.location.href = "https://mygamescratch.vercel.app/";
+                    window.location.replace("https://mygamescratch.vercel.app/");
                 } catch (error) {
-                    alert("Error deleting account: " + error.message + " (You may need to re-login before deleting).");
+                    alert("Error deleting account: " + error.message);
                 }
             }
-        };
-
-        // Open Chat Modal
-        window.openChatModal = function() {
-            document.getElementById('chat-modal').style.display = 'flex';
-        };
-
-        // Close Chat Modal
-        window.closeChatModal = function() {
-            document.getElementById('chat-modal').style.display = 'none';
         };
     </script>
 
@@ -199,8 +191,6 @@
         }
         .dropdown button:hover { background: var(--inst-bg); }
         .dropdown-sep { height: 1px; background: var(--card-border); margin: 6px 0; }
-        .dropdown button.chat { color: #16a34a; font-weight: 500; }
-        .dropdown button.chat:hover { background: rgba(22,163,74,0.08); }
         .dropdown button.logout { color: var(--accent); font-weight: 500; }
         .dropdown button.logout:hover { background: rgba(224,92,0,0.08); }
         .dropdown button.delete { color: #dc2626; font-weight: 500; }
@@ -257,40 +247,9 @@
         .mobile-ok { background: #dcfce7; color: #15803d; }
         .desktop-only { background: #fef9c3; color: #854d0e; }
 
-        /* ── CHAT FLOATING BUTTON ── */
-        .chat-fab {
-            position: fixed; bottom: 24px; right: 20px; z-index: 9999;
-            display: flex; align-items: center; gap: 8px;
-            background: #16a34a; color: white; border: none; cursor: pointer;
-            font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
-            padding: 13px 20px; border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(22,163,74,0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
-            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-        }
-        .chat-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(22,163,74,0.5); }
-        .chat-fab:active { transform: scale(0.96); }
-
-        /* ── CHAT MODAL ── */
-        #chat-modal {
-            position: fixed; inset: 0; z-index: 20000;
-            display: none; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-        }
-        .modal-box {
-            background: var(--card-bg); border: 1px solid var(--card-border);
-            padding: 30px; border-radius: 12px; width: 90%; max-width: 450px;
-            position: relative; text-align: center; box-shadow: 0 10px 40px var(--shadow);
-        }
-        .close-modal {
-            position: absolute; top: 12px; right: 16px; color: var(--subtext);
-            font-size: 20px; cursor: pointer; background: none; border: none;
-        }
-
         @media (max-width: 540px) {
             .header h1 { font-size: 22px; padding: 0 50px; }
             .settings-container { top: 14px; right: 14px; }
-            .chat-fab { bottom: 16px; right: 16px; font-size: 14px; padding: 12px 18px; }
             .game-badge { display: none; }
         }
 
@@ -351,23 +310,6 @@
 </head>
 <body>
 
-    <!-- Chat Floating Action Button -->
-    <button class="chat-fab" onclick="openChatModal()">
-        💬 Chat
-    </button>
-
-    <!-- Chat Popup Modal -->
-    <div id="chat-modal">
-        <div class="modal-box">
-            <button class="close-modal" onclick="closeChatModal()">✕</button>
-            <h3 style="color:var(--gold); font-family:'Playfair Display',serif; font-size:22px; margin-bottom:12px;">VIP Community Chat</h3>
-            <p style="color:var(--inst-text); font-size:14px; line-height:1.6; margin-bottom:20px;">
-                Connect with other VIP members, request new Scratch games, or share strategies!
-            </p>
-            <a href="https://sites.google.com/view/mygamehelp" target="_blank" style="display:inline-block; background:var(--gold); color:#000; padding:12px 24px; border-radius:6px; font-weight:700; text-decoration:none; font-size:13px; text-transform:uppercase; letter-spacing:1px;">Join Help & Chat</a>
-        </div>
-    </div>
-
     <div class="header">
         <div class="settings-container">
             <button class="settings-btn" onclick="toggleSettings()" title="Settings">
@@ -391,7 +333,6 @@
                 <button onclick="setTheme('dark')">🌙 Dark Mode</button>
                 <button onclick="setTheme('light')">☀️ Light Mode</button>
                 <div class="dropdown-sep"></div>
-                <button class="chat" onclick="openChatModal()">💬 Chat</button>
                 <button class="logout" onclick="handleFirebaseLogout()">🚪 Logout</button>
                 <button class="delete" onclick="handleFirebaseDeleteAccount()">⚠️ Delete Account</button>
             </div>
@@ -410,7 +351,7 @@
                     <div class="game-dot"></div>
                     <div class="game-title">Car Game</div>
                 </div>
-                <span class="game-badge">Racing</span>
+                <span class="game-badge">Sports & Racing</span>
                 <span class="platform-badge mobile-ok">📱 Mobile & Desktop</span>
             </div>
             <div class="game-iframe-wrap">
