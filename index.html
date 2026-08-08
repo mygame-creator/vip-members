@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Members Area</title>
-    <script type="text/javascript" src="https://www.authpro.com/auth/Akshat24/?action=pp"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
     <script>
         function applyInitialTheme() {
             let savedTheme = 'system';
@@ -16,6 +17,83 @@
         }
         applyInitialTheme();
     </script>
+
+    <!-- FIREBASE AUTHENTICATION & FIRESTORE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut, 
+            deleteUser 
+        } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            deleteDoc 
+        } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCf0Pfa0HOV4ciAVtqwLVNq_gLcCtAAk8Q",
+            authDomain: "mygamescratch.firebaseapp.com",
+            projectId: "mygamescratch",
+            storageBucket: "mygamescratch.firebasestorage.app",
+            messagingSenderId: "256549154945",
+            appId: "1:256549154945:web:aa29c54bf7036cb3f65d80"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Security Guard: Check authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                // If user is not logged in, redirect them back to the main site
+                window.location.href = "https://mygamescratch.vercel.app/";
+            }
+        });
+
+        // Firebase Logout Function
+        window.handleFirebaseLogout = function() {
+            signOut(auth).then(() => {
+                window.location.href = "https://mygamescratch.vercel.app/";
+            }).catch((error) => {
+                alert("Error logging out: " + error.message);
+            });
+        };
+
+        // Firebase Delete Account Function
+        window.handleFirebaseDeleteAccount = async function() {
+            const confirmDelete = confirm("Are you sure you want to delete your account? This action cannot be undone.");
+            if (!confirmDelete) return;
+
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    // Delete user record from Firestore
+                    await deleteDoc(doc(db, "users", user.uid));
+                    // Delete user account from Firebase Authentication
+                    await deleteUser(user);
+                    alert("Your account has been deleted.");
+                    window.location.href = "https://mygamescratch.vercel.app/";
+                } catch (error) {
+                    alert("Error deleting account: " + error.message + " (You may need to re-login before deleting).");
+                }
+            }
+        };
+
+        // Open Chat Modal
+        window.openChatModal = function() {
+            document.getElementById('chat-modal').style.display = 'flex';
+        };
+
+        // Close Chat Modal
+        window.closeChatModal = function() {
+            document.getElementById('chat-modal').style.display = 'none';
+        };
+    </script>
+
     <style>
         /* ── DARK MODE (default) ── */
         :root {
@@ -34,7 +112,7 @@
             --badge-text: #888;
         }
 
-        /* ── LIGHT MODE — Premium, ultra-clean aesthetic ── */
+        /* ── LIGHT MODE ── */
         html.light-mode {
             --bg: #f2f2f7; 
             --header-bg: rgba(255, 255, 255, 0.75); 
@@ -51,7 +129,6 @@
             --badge-text: #1c1c1e;
         }
 
-        /* Adds a modern frosted-glass blur to the header ONLY in light mode */
         html.light-mode .header {
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -93,7 +170,7 @@
             margin: 14px auto 0;
         }
 
-        /* ── COGWHEEL ── */
+        /* ── SETTINGS / DROPDOWN ── */
         .settings-container { position: absolute; top: 38px; right: 38px; z-index: 10000; }
         .settings-btn {
             background: var(--card-bg); border: 1px solid var(--card-border);
@@ -105,7 +182,6 @@
         .settings-btn svg { fill: var(--text); width: 22px; height: 22px; transition: transform 0.4s ease; }
         .settings-btn:hover svg { transform: rotate(90deg); }
 
-        /* ── DROPDOWN ── */
         .dropdown {
             display: none; position: absolute; top: 52px; right: 0;
             background: var(--card-bg); border: 1px solid var(--card-border);
@@ -123,18 +199,12 @@
         }
         .dropdown button:hover { background: var(--inst-bg); }
         .dropdown-sep { height: 1px; background: var(--card-border); margin: 6px 0; }
-        .dropdown a {
-            display: block; padding: 11px 18px; font-size: 14px;
-            font-family: 'DM Sans', sans-serif; text-decoration: none;
-            transition: background 0.15s; width: 100%; box-sizing: border-box;
-        }
-        .dropdown a:hover { background: var(--inst-bg); }
-        .dropdown a.chat { color: #16a34a; font-weight: 500; }
-        .dropdown a.chat:hover { background: rgba(22,163,74,0.08); }
-        .dropdown a.logout { color: var(--accent); font-weight: 500; }
-        .dropdown a.logout:hover { background: rgba(224,92,0,0.08); }
-        .dropdown a.delete { color: #dc2626; font-weight: 500; }
-        .dropdown a.delete:hover { background: rgba(220,38,38,0.08); }
+        .dropdown button.chat { color: #16a34a; font-weight: 500; }
+        .dropdown button.chat:hover { background: rgba(22,163,74,0.08); }
+        .dropdown button.logout { color: var(--accent); font-weight: 500; }
+        .dropdown button.logout:hover { background: rgba(224,92,0,0.08); }
+        .dropdown button.delete { color: #dc2626; font-weight: 500; }
+        .dropdown button.delete:hover { background: rgba(220,38,38,0.08); }
 
         /* ── GAME GRID ── */
         .game-container {
@@ -185,23 +255,37 @@
             border-radius: 20px; white-space: nowrap;
         }
         .mobile-ok { background: #dcfce7; color: #15803d; }
-        html.light-mode .mobile-ok { background: #dcfce7; color: #15803d; }
         .desktop-only { background: #fef9c3; color: #854d0e; }
-        html.light-mode .desktop-only { background: #fef9c3; color: #854d0e; }
 
         /* ── CHAT FLOATING BUTTON ── */
         .chat-fab {
             position: fixed; bottom: 24px; right: 20px; z-index: 9999;
             display: flex; align-items: center; gap: 8px;
-            background: #16a34a; color: white;
+            background: #16a34a; color: white; border: none; cursor: pointer;
             font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
-            text-decoration: none; padding: 13px 20px; border-radius: 50px;
+            padding: 13px 20px; border-radius: 50px;
             box-shadow: 0 4px 20px rgba(22,163,74,0.4);
             transition: transform 0.2s, box-shadow 0.2s;
             -webkit-tap-highlight-color: transparent; touch-action: manipulation;
         }
         .chat-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(22,163,74,0.5); }
         .chat-fab:active { transform: scale(0.96); }
+
+        /* ── CHAT MODAL ── */
+        #chat-modal {
+            position: fixed; inset: 0; z-index: 20000;
+            display: none; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+        }
+        .modal-box {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 30px; border-radius: 12px; width: 90%; max-width: 450px;
+            position: relative; text-align: center; box-shadow: 0 10px 40px var(--shadow);
+        }
+        .close-modal {
+            position: absolute; top: 12px; right: 16px; color: var(--subtext);
+            font-size: 20px; cursor: pointer; background: none; border: none;
+        }
 
         @media (max-width: 540px) {
             .header h1 { font-size: 22px; padding: 0 50px; }
@@ -267,9 +351,22 @@
 </head>
 <body>
 
-    <a class="chat-fab" href="https://www.authpro.com/auth/Akshat24/?action=chat" target="_blank">
+    <!-- Chat Floating Action Button -->
+    <button class="chat-fab" onclick="openChatModal()">
         💬 Chat
-    </a>
+    </button>
+
+    <!-- Chat Popup Modal -->
+    <div id="chat-modal">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeChatModal()">✕</button>
+            <h3 style="color:var(--gold); font-family:'Playfair Display',serif; font-size:22px; margin-bottom:12px;">VIP Community Chat</h3>
+            <p style="color:var(--inst-text); font-size:14px; line-height:1.6; margin-bottom:20px;">
+                Connect with other VIP members, request new Scratch games, or share strategies!
+            </p>
+            <a href="https://sites.google.com/view/mygamehelp" target="_blank" style="display:inline-block; background:var(--gold); color:#000; padding:12px 24px; border-radius:6px; font-weight:700; text-decoration:none; font-size:13px; text-transform:uppercase; letter-spacing:1px;">Join Help & Chat</a>
+        </div>
+    </div>
 
     <div class="header">
         <div class="settings-container">
@@ -294,9 +391,9 @@
                 <button onclick="setTheme('dark')">🌙 Dark Mode</button>
                 <button onclick="setTheme('light')">☀️ Light Mode</button>
                 <div class="dropdown-sep"></div>
-                <a class="chat" href="https://www.authpro.com/auth/Akshat24/?action=chat" target="_blank">💬 Chat</a>
-                <a class="logout" href="https://sites.google.com/view/mygamescratch/free-area" target="_top">🚪 Logout</a>
-                <a class="delete" href="https://www.authpro.com/auth/Akshat24/?action=del" target="_top">⚠️ Delete Account</a>
+                <button class="chat" onclick="openChatModal()">💬 Chat</button>
+                <button class="logout" onclick="handleFirebaseLogout()">🚪 Logout</button>
+                <button class="delete" onclick="handleFirebaseDeleteAccount()">⚠️ Delete Account</button>
             </div>
         </div>
         <div class="header-eyebrow">Exclusive Access</div>
@@ -305,8 +402,6 @@
     </div>
 
     <div class="game-container">
-
-        <!-- ── MOBILE & DESKTOP GAMES ── -->
 
         <!-- GAME 1: Car Game -->
         <div class="game-card">
@@ -386,8 +481,6 @@
             </div>
             <div class="credits">🎮 Created by <strong>HYPERPIXEL_2015</strong></div>
         </div>
-
-        <!-- ── DESKTOP ONLY GAMES ── -->
 
         <!-- GAME 5: Paper Minecraft -->
         <div class="game-card">
